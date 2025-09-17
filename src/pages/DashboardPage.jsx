@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
+import AddTransactionModal from "../components/AddTransactionModal.jsx";
 
 // Datos de prueba (Mock Data) actualizados con ingresos y gastos
 const mockTransactions = [
@@ -40,6 +41,19 @@ const mockTransactions = [
 ];
 
 function DashboardPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const modalRef = useRef(null);
+  useEffect(() => {
+    const dialog = modalRef.current;
+    if (dialog) {
+      if (isModalOpen) {
+        dialog.showModal(); // Muestra el modal
+      } else {
+        dialog.close(); // Cierra el modal
+      }
+    }
+  }, [isModalOpen]); // Se ejecuta cada vez que 'isModalOpen' cambia
+
   // Calculamos el balance total
   const totalBalance = mockTransactions.reduce((acc, transaction) => {
     return transaction.type === "income"
@@ -49,6 +63,10 @@ function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
+      <AddTransactionModal
+        ref={modalRef}
+        onClose={() => setIsModalOpen(false)}
+      />
       <header className="bg-gray-800 shadow-md">
         <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-emerald-400">Spendesk</h1>
@@ -75,7 +93,10 @@ function DashboardPage() {
           <h2 className="text-3xl font-bold text-gray-200">
             Últimos Movimientos
           </h2>
-          <button className="px-6 py-3 font-bold text-white bg-emerald-500 rounded-md hover:bg-emerald-600 transition duration-300">
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="px-6 py-3 font-bold text-white bg-emerald-500 rounded-md hover:bg-emerald-600 transition duration-300"
+          >
             Añadir Movimiento
           </button>
         </section>
