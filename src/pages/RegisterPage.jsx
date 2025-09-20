@@ -1,102 +1,97 @@
-import React, {useState} from "react";
-import { Link } from "react-router-dom";
-import { supabase } from "../lib/supabaseClient";
+import React, { useState } from "react";
+// 1. Importamos 'useNavigate' para poder redirigir
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabaseClient.jsx";
 
 function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  // 2. Preparamos la herramienta de navegación
+  const navigate = useNavigate();
 
   const handleRegister = async (event) => {
-    event.preventDefault(); // Esto previene que la página se recargue, que es el comportamiento por defecto
+    event.preventDefault();
     setLoading(true);
 
     try {
-      // 4. Aquí ocurre la magia: llamamos a la función de registro de Supabase
       const { data, error } = await supabase.auth.signUp({
         email: email,
         password: password,
       });
 
       if (error) {
-        // Si Supabase nos devuelve un error, lo lanzamos para que lo capture el 'catch'
         throw error;
       }
 
-      // Si todo va bien, mostramos un mensaje de éxito
-      alert(
-        "¡Registro exitoso! Revisa tu correo electrónico para confirmar la cuenta."
-      );
+      alert("¡Registro exitoso! Serás redirigido al Dashboard.");
+
+      // 3. ¡LA SOLUCIÓN! Si el registro es exitoso, lo llevamos al dashboard
+      navigate("/dashboard");
     } catch (error) {
-      // Si algo falla durante el proceso, mostramos el error en un alert
-      alert(error.error_description || error.message);
+      console.error("Error detallado durante el REGISTRO:", error);
+      alert("Hubo un error al registrar. Revisa la consola para más detalles.");
     } finally {
-      // 5. Pase lo que pase (éxito o error), nos aseguramos de que el estado de carga vuelva a 'false'
       setLoading(false);
     }
   };
 
   return (
-    <main className="flex items-center justify-center min-h-screen">
-      <section className="w-full max-w-md p-8 space-y-8 bg-gray-800 rounded-lg shadow-lg">
-        <header className="text-center">
-          <h1 className="text-4xl font-bold text-emerald-400">
-            Crear una cuenta
+    // El JSX del formulario no cambia en absoluto
+    <main className="min-h-screen flex items-center justify-center bg-gray-900 p-4">
+      <section className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md">
+        <header className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-emerald-400">
+            Crear una Cuenta
           </h1>
-          <p className="mt-2 text-gray-400">
-            Únete a <span className="text-emerald-400">Spendesk</span> y toma el
-            control de tus finanzas.
+          <p className="text-gray-400">
+            Únete a Spendesk y toma el control de tus finanzas.
           </p>
         </header>
 
-        <form onSubmit={handleRegister} className="space-y-6">
-          <div>
-            <label
-              htmlFor="email"
-              className="block mb-2 text-sm font-medium text-gray-300"
-            >
+        <form onSubmit={handleRegister}>
+          <div className="mb-4">
+            <label htmlFor="email" className="block text-gray-400 mb-2">
               Correo Electrónico
             </label>
             <input
               type="email"
               id="email"
-              name="email"
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-4 py-2 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               placeholder="tu@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
             />
           </div>
-
-          <div>
-            <label
-              htmlFor="password"
-              className="block mb-2 text-sm font-medium text-gray-300"
-            >
+          <div className="mb-6">
+            <label htmlFor="password" className="block text-gray-400 mb-2">
               Contraseña
             </label>
             <input
               type="password"
               id="password"
-              name="password"
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-4 py-2 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
             />
           </div>
           <button
             type="submit"
-            className="w-full py-3 px-4 font-bold text-white bg-emerald-500 rounded-md hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-emerald-500 transition duration-300"
+            className="w-full py-3 font-bold text-white bg-emerald-500 rounded-md hover:bg-emerald-600 transition duration-300 disabled:bg-gray-500"
+            disabled={loading}
           >
-            Registrarse
+            {loading ? "Registrando..." : "Crear Cuenta"}
           </button>
         </form>
 
-        <footer className="text-sm text-center">
+        <footer className="text-center mt-6">
           <p className="text-gray-400">
-            ¿Ya tienes cuenta?{" "}
-            <Link
-              to="/login"
-              className="font-medium text-emerald-400 hover:underline"
-            >
-              Inicia sesión aquí
+            ¿Ya tienes una cuenta?{" "}
+            <Link to="/login" className="text-emerald-400 hover:underline">
+              Inicia Sesión
             </Link>
           </p>
         </footer>
