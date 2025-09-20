@@ -1,7 +1,41 @@
-import React from "react";
+import React, {useState} from "react";
 import { Link } from "react-router-dom";
+import { supabase } from "../lib/supabaseClient";
 
 function RegisterPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleRegister = async (event) => {
+    event.preventDefault(); // Esto previene que la página se recargue, que es el comportamiento por defecto
+    setLoading(true);
+
+    try {
+      // 4. Aquí ocurre la magia: llamamos a la función de registro de Supabase
+      const { data, error } = await supabase.auth.signUp({
+        email: email,
+        password: password,
+      });
+
+      if (error) {
+        // Si Supabase nos devuelve un error, lo lanzamos para que lo capture el 'catch'
+        throw error;
+      }
+
+      // Si todo va bien, mostramos un mensaje de éxito
+      alert(
+        "¡Registro exitoso! Revisa tu correo electrónico para confirmar la cuenta."
+      );
+    } catch (error) {
+      // Si algo falla durante el proceso, mostramos el error en un alert
+      alert(error.error_description || error.message);
+    } finally {
+      // 5. Pase lo que pase (éxito o error), nos aseguramos de que el estado de carga vuelva a 'false'
+      setLoading(false);
+    }
+  };
+
   return (
     <main className="flex items-center justify-center min-h-screen">
       <section className="w-full max-w-md p-8 space-y-8 bg-gray-800 rounded-lg shadow-lg">
@@ -15,7 +49,7 @@ function RegisterPage() {
           </p>
         </header>
 
-        <form className="space-y-6">
+        <form onSubmit={handleRegister} className="space-y-6">
           <div>
             <label
               htmlFor="email"
@@ -57,7 +91,13 @@ function RegisterPage() {
 
         <footer className="text-sm text-center">
           <p className="text-gray-400">
-            ¿Ya tienes cuenta? <Link to="/login" className="font-medium text-emerald-400 hover:underline">Inicia sesión aquí</Link>
+            ¿Ya tienes cuenta?{" "}
+            <Link
+              to="/login"
+              className="font-medium text-emerald-400 hover:underline"
+            >
+              Inicia sesión aquí
+            </Link>
           </p>
         </footer>
       </section>
