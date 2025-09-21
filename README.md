@@ -1,39 +1,39 @@
-Spendesk 💸
-Bienvenido a Spendesk, una aplicación web de gestión de gastos personales diseñada para ayudarte a tomar el control de tus finanzas de una manera simple y visual.
+# Spendesk - Gestor de Gastos Personales
 
-Enlace a la aplicación desplegada: Spendesk en Vercel 
+Spendesk es una aplicación web moderna y ágil diseñada para ayudarte a tomar el control total de tus finanzas personales. Registra tus ingresos y gastos de forma intuitiva, visualiza tu balance y entiende a dónde va tu dinero. Este proyecto demuestra la creación de una aplicación full-stack completa con tecnologías modernas.
 
-🚀 Propósito del Proyecto
-Spendesk es un proyecto de portfolio full-stack que demuestra la capacidad de construir una aplicación web moderna, segura y funcional desde cero. El objetivo es mostrar mis habilidades en el desarrollo frontend con React, la gestión de un backend serverless con Supabase y el despliegue de aplicaciones en la nube con Vercel.
+**[Enlace a la aplicación desplegada]** *(Lo añadiremos al final del proyecto)*
 
-✨ Características Principales
-Autenticación de Usuarios: Sistema de registro e inicio de sesión seguro gestionado con Supabase Auth. Cada usuario solo puede ver y gestionar sus propios gastos.
+---
 
-Gestión de Gastos (CRUD): Funcionalidad completa para Crear, Leer, Actualizar y Borrar gastos.
+## Características Principales
 
-Interfaz Intuitiva: Un diseño limpio y moderno, construido con Tailwind CSS, que permite una experiencia de usuario fluida.
+Actualmente, la aplicación cuenta con un sistema de autenticación robusto y una interfaz de usuario completamente maquetada.
 
-Visualización de Datos: Un dashboard principal donde se listan los gastos de forma clara para un fácil seguimiento.
+* **Registro de Usuarios:** Los nuevos usuarios pueden crear una cuenta segura con su correo electrónico y contraseña.
+* **Inicio de Sesión:** Los usuarios registrados pueden acceder a la aplicación de forma segura.
+* **Usuario de Demostración:** Permite a los visitantes (¡y a los reclutadores!) probar la funcionalidad principal de la aplicación al instante con un solo clic, sin necesidad de registrarse.
+* **Gestión de Sesión Global:** La aplicación sabe en todo momento si un usuario ha iniciado sesión, manteniendo la sesión persistente entre recargas de la página.
+* **Rutas Protegidas:** La sección principal de la aplicación (el Dashboard) está protegida y solo es accesible para usuarios autenticados.
+* **Cierre de Sesión:** Los usuarios pueden cerrar su sesión de forma segura.
 
+---
 
+## Stack Tecnológico
 
-🛠️ Stack Tecnológico
-Este proyecto está construido con un stack tecnológico moderno y altamente demandado en la industria:
+### Frontend
+* **React (con Vite):** Para una interfaz de usuario rápida, moderna y reactiva.
+* **Tailwind CSS:** Para un diseño estilizado y responsive implementado de forma ágil.
+* **React Router:** Para la gestión de la navegación en una Single Page Application (SPA).
 
-Frontend:
+### Backend (BaaS)
+* **Supabase:** Utilizado para la base de datos PostgreSQL, autenticación de usuarios y la generación instantánea de APIs.
 
-React: Librería principal para la interfaz de usuario.
+### Despliegue
+* **Vercel:** Para un despliegue continuo, rápido y optimizado del frontend.
 
-Vite: Entorno de desarrollo ultrarrápido.
+---
 
-Tailwind CSS (v4): Framework CSS para un diseño moderno y eficiente.
+## Estado del Proyecto
 
-Backend y Base de Datos:
-
-Supabase: Plataforma open-source que provee base de datos PostgreSQL, autenticación y APIs en tiempo real.
-
-Despliegue:
-
-Vercel: Plataforma para el despliegue continuo y hosting del frontend.
-
-Este README está diseñado para ofrecer una visión general del proyecto, sus funcionalidades y las competencias técnicas demostradas en su construcción.
+La base de la aplicación, incluyendo la interfaz de usuario completa y todo el sistema de autenticación, está 100% completada. La siguiente fase se centrará en implementar la lógica de negocio principal: la gestión de transacciones.

@@ -1,23 +1,43 @@
+/**
+ * @file LoginPage.jsx
+ * @module pages/LoginPage
+ * @description Página que renderiza el formulario de inicio de sesión y gestiona la lógica
+ * de autenticación del usuario, incluyendo un modo de demostración.
+ */
+
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-// 1. Importamos nuestro cliente de Supabase
 import { supabase } from "../lib/supabaseClient.jsx";
 
+/**
+ * @function LoginPage
+ * @description Componente funcional que gestiona el estado del formulario, las llamadas a la API
+ * de autenticación de Supabase y la navegación del usuario tras un inicio de sesión exitoso.
+ * @returns {JSX.Element}
+ */
 function LoginPage() {
-  // 2. Estados para guardar los datos del formulario
+  // Estados para gestionar los campos controlados del formulario.
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  // Estado para gestionar la UI durante las peticiones asíncronas, previniendo envíos múltiples.
   const [loading, setLoading] = useState(false);
-  // 3. 'useNavigate' es una herramienta para redirigir al usuario
+
+  // Hook de react-router-dom para la redirección programática del usuario.
   const navigate = useNavigate();
 
-  // 4. Función para manejar el inicio de sesión normal
+  /**
+   * @async
+   * @function handleLogin
+   * @description Gestiona el envío del formulario de inicio de sesión estándar.
+   * Llama al método `signInWithPassword` de Supabase y redirige al dashboard si tiene éxito.
+   * @param {React.FormEvent<HTMLFormElement>} event - Objeto del evento del formulario.
+   */
   const handleLogin = async (event) => {
     event.preventDefault();
     setLoading(true);
 
     try {
-      // 5. Llamamos a la función de inicio de sesión de Supabase
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email,
         password: password,
@@ -25,7 +45,7 @@ function LoginPage() {
 
       if (error) throw error;
 
-      // 6. Si el login es exitoso, redirigimos al usuario al Dashboard
+      // Redirección al dashboard tras un inicio de sesión exitoso.
       navigate("/dashboard");
     } catch (error) {
       alert(error.error_description || error.message);
@@ -34,22 +54,27 @@ function LoginPage() {
     }
   };
 
-  // 7. Función específica para el login del usuario Demo
+  /**
+   * @async
+   * @function handleDemoLogin
+   * @description Inicia sesión utilizando credenciales de demostración predefinidas.
+   * Facilita la revisión de la aplicación por parte de visitantes o reclutadores.
+   */
   const handleDemoLogin = async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: "demo@example.com",
-        password: "password123", // ¡OJO! Esta debe ser la contraseña que estableciste en Supabase
+        password: "password123",
       });
 
       if (error) throw error;
 
       navigate("/dashboard");
     } catch (error) {
-      console.error("Error detallado del Login:", error);
+      console.error("Error detallado del Login Demo:", error);
       alert(
-        "Credenciales inválidas. Revisa la consola del navegador para más detalles."
+        "Credenciales del modo demo inválidas. Revisa la consola para más detalles."
       );
     } finally {
       setLoading(false);
@@ -65,6 +90,7 @@ function LoginPage() {
         </header>
 
         <form onSubmit={handleLogin}>
+          {/* Campo de Email (controlado) */}
           <div className="mb-4">
             <label htmlFor="email" className="block text-gray-400 mb-2">
               Correo Electrónico
@@ -79,6 +105,7 @@ function LoginPage() {
               required
             />
           </div>
+          {/* Campo de Contraseña (controlado) */}
           <div className="mb-6">
             <label htmlFor="password" className="block text-gray-400 mb-2">
               Contraseña
@@ -108,6 +135,7 @@ function LoginPage() {
           <hr className="flex-grow border-gray-600" />
         </div>
 
+        {/* Botón para el flujo de autenticación de demostración */}
         <button
           onClick={handleDemoLogin}
           className="w-full py-3 font-bold text-white bg-gray-600 rounded-md hover:bg-gray-700 transition duration-300 disabled:bg-gray-500"

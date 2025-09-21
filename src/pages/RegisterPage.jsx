@@ -1,15 +1,39 @@
+/**
+ * @file RegisterPage.jsx
+ * @module pages/RegisterPage
+ * @description Página de registro de nuevos usuarios. Gestiona la captura de credenciales
+ * y la comunicación con el endpoint de 'signUp' de Supabase.
+ */
+
 import React, { useState } from "react";
-// 1. Importamos 'useNavigate' para poder redirigir
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient.jsx";
 
+/**
+ * @function RegisterPage
+ * @description Componente funcional que renderiza el formulario de registro, maneja su estado
+ * y ejecuta la lógica de creación de cuenta. Tras un registro exitoso, redirige
+ * automáticamente al usuario al dashboard, ya que Supabase inicia sesión al registrar.
+ * @returns {JSX.Element}
+ */
 function RegisterPage() {
+  // Estados para gestionar los campos controlados del formulario.
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  // Estado para la gestión de la UI durante las peticiones asíncronas.
   const [loading, setLoading] = useState(false);
-  // 2. Preparamos la herramienta de navegación
+
+  // Hook para la redirección programática tras el registro.
   const navigate = useNavigate();
 
+  /**
+   * @async
+   * @function handleRegister
+   * @description Gestiona el evento 'submit' del formulario. Invoca el método `signUp` de Supabase
+   * y maneja la redirección o la presentación de errores.
+   * @param {React.FormEvent<HTMLFormElement>} event - Objeto del evento del formulario.
+   */
   const handleRegister = async (event) => {
     event.preventDefault();
     setLoading(true);
@@ -26,7 +50,7 @@ function RegisterPage() {
 
       alert("¡Registro exitoso! Serás redirigido al Dashboard.");
 
-      // 3. ¡LA SOLUCIÓN! Si el registro es exitoso, lo llevamos al dashboard
+      // Redirección al dashboard. Supabase gestiona la sesión automáticamente tras el signUp.
       navigate("/dashboard");
     } catch (error) {
       console.error("Error detallado durante el REGISTRO:", error);
@@ -37,7 +61,6 @@ function RegisterPage() {
   };
 
   return (
-    // El JSX del formulario no cambia en absoluto
     <main className="min-h-screen flex items-center justify-center bg-gray-900 p-4">
       <section className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md">
         <header className="text-center mb-8">
@@ -50,6 +73,7 @@ function RegisterPage() {
         </header>
 
         <form onSubmit={handleRegister}>
+          {/* Campo de Email (controlado) */}
           <div className="mb-4">
             <label htmlFor="email" className="block text-gray-400 mb-2">
               Correo Electrónico
@@ -64,6 +88,7 @@ function RegisterPage() {
               required
             />
           </div>
+          {/* Campo de Contraseña (controlado) */}
           <div className="mb-6">
             <label htmlFor="password" className="block text-gray-400 mb-2">
               Contraseña

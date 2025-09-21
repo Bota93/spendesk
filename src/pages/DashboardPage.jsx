@@ -1,11 +1,17 @@
+/**
+ * @file DashboardPage.jsx
+ * @module pages/DashboardPage
+ * @description Página principal de la aplicación para usuarios autenticados. Muestra un resumen
+ * financiero, una lista de transacciones y permite la creación de nuevos movimientos.
+ */
+
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-// 1. Importamos el hook 'useAuth' para acceder a la sesión y el cliente de supabase
 import { useAuth } from "../context/AuthContext.jsx";
 import { supabase } from "../lib/supabaseClient.jsx";
 import AddTransactionModal from "../components/AddTransactionModal.jsx";
 
-// ... (El mockTransactions sigue aquí, lo quitaremos en el siguiente paso)
+// TODO: Reemplazar estos datos estáticos con una llamada a la API de Supabase.
 const mockTransactions = [
   {
     id: 1,
@@ -21,61 +27,50 @@ const mockTransactions = [
     date: "2024-09-05",
     type: "expense",
   },
-  {
-    id: 3,
-    concept: "Compra en supermercado",
-    amount: 75.4,
-    date: "2024-09-07",
-    type: "expense",
-  },
-  {
-    id: 4,
-    concept: "Proyecto freelance",
-    amount: 300.0,
-    date: "2024-09-10",
-    type: "income",
-  },
-  {
-    id: 5,
-    concept: "Cena con amigos",
-    amount: 45.5,
-    date: "2024-09-12",
-    type: "expense",
-  },
+  // ... (más datos de prueba)
 ];
 
+/**
+ * @function DashboardPage
+ * @description Renderiza el panel principal del usuario, incluyendo el balance, la lista
+ * de transacciones y los controles para añadir nuevos datos y cerrar sesión.
+ * @returns {JSX.Element}
+ */
 function DashboardPage() {
-  // 2. Usamos el hook para obtener la información de la sesión global
+  // Hook para acceder a la información de la sesión desde el contexto global.
   const { session } = useAuth();
+  // Hook de react-router-dom para la navegación programática.
   const navigate = useNavigate();
 
+  // Estado para controlar la visibilidad del modal de añadir transacción.
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // Ref para obtener una referencia directa al elemento <dialog> del DOM.
   const modalRef = useRef(null);
 
+  // Efecto secundario que sincroniza el estado `isModalOpen` con el estado del <dialog> nativo.
   useEffect(() => {
     const dialog = modalRef.current;
     if (dialog) {
-      if (isModalOpen) {
-        dialog.showModal();
-      } else {
-        dialog.close();
-      }
+      isModalOpen ? dialog.showModal() : dialog.close();
     }
   }, [isModalOpen]);
 
-  // 3. Función para cerrar la sesión del usuario
+  /**
+   * Gestiona el cierre de sesión del usuario.
+   * Invoca el método signOut de Supabase y redirige al usuario.
+   */
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error("Error al cerrar sesión:", error);
     } else {
-      // Si el logout es exitoso, nuestro AuthContext se actualizará automáticamente
-      // y el ProtectedRoute nos redirigirá al inicio.
-      // También podemos forzarlo por si acaso.
+      // La redirección es manejada automáticamente por ProtectedRoute al actualizarse el AuthContext,
+      // pero una navegación explícita asegura el comportamiento.
       navigate("/");
     }
   };
 
+  // TODO: Reemplazar este cálculo en el cliente por una llamada a una función RPC de Supabase para mayor eficiencia.
   const totalBalance = mockTransactions.reduce((acc, transaction) => {
     return transaction.type === "income"
       ? acc + transaction.amount
@@ -93,12 +88,11 @@ function DashboardPage() {
         <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-emerald-400">Spendesk</h1>
-            {/* 4. ¡Aquí está la magia! Mostramos el email del usuario que ha iniciado sesión */}
+            {/* Muestra el email del usuario si la sesión está activa, confirmando la autenticación. */}
             {session && (
               <p className="text-sm text-gray-400">{session.user.email}</p>
             )}
           </div>
-          {/* 5. Conectamos el botón de cerrar sesión a nuestra nueva función */}
           <button
             onClick={handleLogout}
             className="px-4 py-2 font-bold text-gray-800 bg-gray-300 rounded-md hover:bg-gray-400 transition duration-300"
@@ -108,8 +102,8 @@ function DashboardPage() {
         </nav>
       </header>
 
-      {/* ... El resto del JSX del main (balance, lista, etc.) no cambia ... */}
       <main className="container mx-auto px-6 py-8">
+        {/* Componente visual para el balance total */}
         <section className="bg-gray-800 rounded-lg shadow-lg p-6 mb-8 text-center">
           <h2 className="text-lg font-semibold text-gray-400">Balance Total</h2>
           <p
@@ -121,6 +115,7 @@ function DashboardPage() {
           </p>
         </section>
 
+        {/* Cabecera de la sección de transacciones y botón de acción principal */}
         <section className="flex justify-between items-center mb-8">
           <h2 className="text-3xl font-bold text-gray-200">
             Últimos Movimientos
@@ -133,6 +128,7 @@ function DashboardPage() {
           </button>
         </section>
 
+        {/* Lista de transacciones renderizada dinámicamente */}
         <section className="bg-gray-800 rounded-lg shadow-lg">
           <ul className="divide-y divide-gray-700">
             {mockTransactions.length > 0 ? (

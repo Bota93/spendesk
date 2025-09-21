@@ -1,16 +1,41 @@
+/**
+ * @file AddTransactionModal.jsx
+ * @module components/AddTransactionModal
+ * @description Componente modal que encapsula el formulario para la creación y
+ * edición de transacciones financieras. Utiliza el elemento nativo <dialog>
+ * para la gestión del foco y la accesibilidad.
+ */
+
 import React, { forwardRef } from "react";
 
-// Usamos forwardRef para poder pasar la ref desde el Dashboard al <dialog>
+/**
+ * @function AddTransactionModal
+ * @description Renderiza un formulario modal para la entrada de datos de una transacción.
+ * El control de visibilidad del modal es manejado por el componente padre
+ * a través de una ref reenviada, siguiendo el patrón de control de componentes no visuales.
+ * @param {object} props - Propiedades del componente.
+ * @param {function} props.onClose - Callback invocado para solicitar el cierre del modal.
+ * @param {React.Ref<HTMLDialogElement>} ref - Ref reenviada para adjuntar al elemento <dialog>.
+ * @returns {JSX.Element}
+ */
 const AddTransactionModal = forwardRef(function AddTransactionModal(
   { onClose },
   ref
 ) {
-  // Maneja el evento de envío del formulario
+  /**
+   * Gestiona el evento `submit` del formulario.
+   * Previene el comportamiento por defecto y maneja la lógica de negocio.
+   * @param {React.FormEvent<HTMLFormElement>} event - Objeto del evento del formulario.
+   */
   const handleSubmit = (event) => {
-    event.preventDefault(); // Previene que la página se recargue
-    // Aquí irá la lógica para guardar los datos en el futuro
+    event.preventDefault();
+
+    // TODO: Implementar la recolección de datos del formulario (new FormData(event.currentTarget))
+    // y la posterior llamada a la API para la inserción/actualización de la transacción.
     console.log("Formulario enviado");
-    onClose(); // Cierra el modal después de enviar
+
+    // Cierra el modal tras el envío.
+    onClose();
   };
 
   return (
@@ -18,11 +43,10 @@ const AddTransactionModal = forwardRef(function AddTransactionModal(
       ref={ref}
       className="p-8 bg-gray-800 rounded-lg shadow-xl text-white w-full max-w-md backdrop:bg-black backdrop:opacity-50"
     >
-      {/* El onSubmit ahora lo manejamos nosotros para tener más control */}
       <form onSubmit={handleSubmit}>
         <h2 className="text-2xl font-bold mb-6">Añadir Movimiento</h2>
 
-        {/* Campo Concepto */}
+        {/* Input: Concepto */}
         <div className="mb-4">
           <label htmlFor="concept" className="block text-gray-400 mb-2">
             Concepto
@@ -36,7 +60,7 @@ const AddTransactionModal = forwardRef(function AddTransactionModal(
           />
         </div>
 
-        {/* Campo Cantidad */}
+        {/* Input: Cantidad */}
         <div className="mb-4">
           <label htmlFor="amount" className="block text-gray-400 mb-2">
             Cantidad
@@ -51,7 +75,7 @@ const AddTransactionModal = forwardRef(function AddTransactionModal(
           />
         </div>
 
-        {/* Campo Fecha */}
+        {/* Input: Fecha */}
         <div className="mb-4">
           <label htmlFor="date" className="block text-gray-400 mb-2">
             Fecha
@@ -66,7 +90,7 @@ const AddTransactionModal = forwardRef(function AddTransactionModal(
           />
         </div>
 
-        {/* Campo Tipo de Transacción */}
+        {/* Input: Tipo de Transacción */}
         <div className="mb-6">
           <span className="block text-gray-400 mb-2">Tipo de Movimiento</span>
           <div className="flex gap-4">
@@ -92,9 +116,8 @@ const AddTransactionModal = forwardRef(function AddTransactionModal(
           </div>
         </div>
 
-        {/* Botones de Acción */}
+        {/* Acciones del formulario */}
         <div className="flex justify-end gap-4">
-          {/* Este botón ahora es de tipo "button" para que no envíe el formulario */}
           <button
             type="button"
             onClick={onClose}
