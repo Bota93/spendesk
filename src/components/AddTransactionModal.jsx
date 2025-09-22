@@ -1,41 +1,74 @@
 /**
  * @file AddTransactionModal.jsx
  * @module components/AddTransactionModal
- * @description Componente modal que encapsula el formulario para la creación y
- * edición de transacciones financieras. Utiliza el elemento nativo <dialog>
- * para la gestión del foco y la accesibilidad.
+ * @description Componente modal que renderiza un formulario para añadir una nueva transacción,
+ * incluyendo ahora un campo de selección para la categoría.
  */
 
-import React, { forwardRef } from "react";
+import React, { forwardRef, useState } from "react";
+import { supabase } from "../lib/supabaseClient.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 
-/**
- * @function AddTransactionModal
- * @description Renderiza un formulario modal para la entrada de datos de una transacción.
- * El control de visibilidad del modal es manejado por el componente padre
- * a través de una ref reenviada, siguiendo el patrón de control de componentes no visuales.
- * @param {object} props - Propiedades del componente.
- * @param {function} props.onClose - Callback invocado para solicitar el cierre del modal.
- * @param {React.Ref<HTMLDialogElement>} ref - Ref reenviada para adjuntar al elemento <dialog>.
- * @returns {JSX.Element}
- */
+// 1. Definimos una lista de categorías predefinidas.
+const categories = [
+  "Comida",
+  "Vivienda",
+  "Transporte",
+  "Ocio",
+  "Facturas",
+  "Salud",
+  "Salario",
+  "Freelance",
+  "Otros",
+];
+
 const AddTransactionModal = forwardRef(function AddTransactionModal(
-  { onClose },
+  { onClose, onTransactionAdded },
   ref
 ) {
-  /**
-   * Gestiona el evento `submit` del formulario.
-   * Previene el comportamiento por defecto y maneja la lógica de negocio.
-   * @param {React.FormEvent<HTMLFormElement>} event - Objeto del evento del formulario.
-   */
-  const handleSubmit = (event) => {
+  const [concept, setConcept] = useState("");
+  const [amount, setAmount] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [type, setType] = useState("expense");
+  // 2. Añadimos un nuevo estado para la categoría, con un valor inicial.
+  const [category, setCategory] = useState(categories[0]);
+  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    if (!user) {
+      alert("Debes estar logueado para añadir una transacción.");
+      return;
+    }
+    setLoading(true);
 
-    // TODO: Implementar la recolección de datos del formulario (new FormData(event.currentTarget))
-    // y la posterior llamada a la API para la inserción/actualización de la transacción.
-    console.log("Formulario enviado");
+    try {
+      const transactionData = {
+        description: concept,
+        amount: parseFloat(amount),
+        date: date,
+        type: type,
+        user_id: user.id,
+        // 3. Incluimos la categoría en el objeto que se envía a Supabase.
+        category: category,
+      };
 
-    // Cierra el modal tras el envío.
-    onClose();
+      const { data, error } = await supabase
+        .from("transactions")
+        .insert([transactionData]);
+
+      if (error) throw error;
+
+      alert("¡Movimiento añadido con éxito!");
+      onTransactionAdded();
+      onClose();
+    } catch (error) {
+      console.error("Error al añadir la transacción:", error);
+      alert("No se pudo añadir el movimiento.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -46,7 +79,6 @@ const AddTransactionModal = forwardRef(function AddTransactionModal(
       <form onSubmit={handleSubmit}>
         <h2 className="text-2xl font-bold mb-6">Añadir Movimiento</h2>
 
-        {/* Input: Concepto */}
         <div className="mb-4">
           <label htmlFor="concept" className="block text-gray-400 mb-2">
             Concepto
@@ -56,11 +88,11 @@ const AddTransactionModal = forwardRef(function AddTransactionModal(
             id="concept"
             name="concept"
             className="w-full px-4 py-2 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            value={concept}
+            onChange={(e) => setConcept(e.target.value)}
             required
           />
         </div>
-
-        {/* Input: Cantidad */}
         <div className="mb-4">
           <label htmlFor="amount" className="block text-gray-400 mb-2">
             Cantidad
@@ -71,11 +103,11 @@ const AddTransactionModal = forwardRef(function AddTransactionModal(
             name="amount"
             step="0.01"
             className="w-full px-4 py-2 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
             required
           />
         </div>
-
-        {/* Input: Fecha */}
         <div className="mb-4">
           <label htmlFor="date" className="block text-gray-400 mb-2">
             Fecha
@@ -85,12 +117,33 @@ const AddTransactionModal = forwardRef(function AddTransactionModal(
             id="date"
             name="date"
             className="w-full px-4 py-2 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            defaultValue={new Date().toISOString().split("T")[0]}
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
             required
           />
         </div>
 
-        {/* Input: Tipo de Transacción */}
+        {/* 4. Añadimos el nuevo campo de selección para la categoría. */}
+        <div className="mb-4">
+          <label htmlFor="category" className="block text-gray-400 mb-2">
+            Categoría
+          </label>
+          <select
+            id="category"
+            name="category"
+            className="w-full px-4 py-2 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            {/* Mapeamos el array de categorías para crear las opciones del desplegable */}
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="mb-6">
           <span className="block text-gray-400 mb-2">Tipo de Movimiento</span>
           <div className="flex gap-4">
@@ -99,6 +152,8 @@ const AddTransactionModal = forwardRef(function AddTransactionModal(
                 type="radio"
                 name="type"
                 value="income"
+                checked={type === "income"}
+                onChange={(e) => setType(e.target.value)}
                 className="form-radio text-emerald-500 bg-gray-700 border-gray-600 focus:ring-emerald-500"
               />
               <span className="ml-2">Ingreso</span>
@@ -108,15 +163,15 @@ const AddTransactionModal = forwardRef(function AddTransactionModal(
                 type="radio"
                 name="type"
                 value="expense"
+                checked={type === "expense"}
+                onChange={(e) => setType(e.target.value)}
                 className="form-radio text-red-500 bg-gray-700 border-gray-600 focus:ring-red-500"
-                defaultChecked
               />
               <span className="ml-2">Gasto</span>
             </label>
           </div>
         </div>
 
-        {/* Acciones del formulario */}
         <div className="flex justify-end gap-4">
           <button
             type="button"
@@ -128,8 +183,9 @@ const AddTransactionModal = forwardRef(function AddTransactionModal(
           <button
             type="submit"
             className="px-6 py-2 font-bold text-white bg-emerald-500 rounded-md hover:bg-emerald-600 transition duration-300"
+            disabled={loading}
           >
-            Guardar
+            {loading ? "Guardando..." : "Guardar"}
           </button>
         </div>
       </form>
