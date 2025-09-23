@@ -1,8 +1,8 @@
 /**
  * @file LoginPage.jsx
  * @module pages/LoginPage
- * @description Página que renderiza el formulario de inicio de sesión y gestiona la lógica
- * de autenticación del usuario, incluyendo un modo de demostración.
+ * @description Página de inicio de sesión. Implementa la autenticación estándar y una
+ * funcionalidad avanzada para crear usuarios de demostración dinámicos y únicos.
  */
 
 import React, { useState } from "react";
@@ -11,41 +11,32 @@ import { supabase } from "../lib/supabaseClient.jsx";
 
 /**
  * @function LoginPage
- * @description Componente funcional que gestiona el estado del formulario, las llamadas a la API
- * de autenticación de Supabase y la navegación del usuario tras un inicio de sesión exitoso.
+ * @description Componente que gestiona dos flujos de autenticación:
+ * 1. Inicio de sesión estándar con email/contraseña para usuarios registrados.
+ * 2. Creación e inicio de sesión "al vuelo" para usuarios de demostración temporales.
  * @returns {JSX.Element}
  */
 function LoginPage() {
-  // Estados para gestionar los campos controlados del formulario.
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  // Estado para gestionar la UI durante las peticiones asíncronas, previniendo envíos múltiples.
   const [loading, setLoading] = useState(false);
-
-  // Hook de react-router-dom para la redirección programática del usuario.
   const navigate = useNavigate();
 
   /**
    * @async
    * @function handleLogin
-   * @description Gestiona el envío del formulario de inicio de sesión estándar.
-   * Llama al método `signInWithPassword` de Supabase y redirige al dashboard si tiene éxito.
+   * @description Gestiona el inicio de sesión para usuarios existentes.
    * @param {React.FormEvent<HTMLFormElement>} event - Objeto del evento del formulario.
    */
   const handleLogin = async (event) => {
     event.preventDefault();
     setLoading(true);
-
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email,
         password: password,
       });
-
       if (error) throw error;
-
-      // Redirección al dashboard tras un inicio de sesión exitoso.
       navigate("/dashboard");
     } catch (error) {
       alert(error.error_description || error.message);
@@ -57,25 +48,36 @@ function LoginPage() {
   /**
    * @async
    * @function handleDemoLogin
-   * @description Inicia sesión utilizando credenciales de demostración predefinidas.
-   * Facilita la revisión de la aplicación por parte de visitantes o reclutadores.
+   * @description Proporciona una experiencia de demostración creando un nuevo usuario temporal
+   * con credenciales aleatorias. Se añaden metadatos (`is_demo: true`) a este usuario
+   * para permitir su identificación y posterior limpieza automática desde el backend.
+   * Supabase inicia sesión automáticamente tras un `signUp` exitoso.
    */
   const handleDemoLogin = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: "demo@example.com",
-        password: "password123",
+      // Genera credenciales únicas para asegurar una sesión de demo aislada.
+      const demoEmail = `demo-${Date.now()}@example.com`;
+      const demoPassword = Math.random().toString(36).slice(-8);
+
+      // Crea el nuevo usuario demo. El `signUp` también inicia la sesión.
+      const { data, error } = await supabase.auth.signUp({
+        email: demoEmail,
+        password: demoPassword,
+        options: {
+          // Se inyectan metadatos para identificar a este usuario como temporal/demo.
+          data: {
+            is_demo: true,
+          },
+        },
       });
 
       if (error) throw error;
 
       navigate("/dashboard");
     } catch (error) {
-      console.error("Error detallado del Login Demo:", error);
-      alert(
-        "Credenciales del modo demo inválidas. Revisa la consola para más detalles."
-      );
+      console.error("Error al crear el usuario demo:", error);
+      alert("No se pudo iniciar el modo de demostración.");
     } finally {
       setLoading(false);
     }
@@ -90,7 +92,6 @@ function LoginPage() {
         </header>
 
         <form onSubmit={handleLogin}>
-          {/* Campo de Email (controlado) */}
           <div className="mb-4">
             <label htmlFor="email" className="block text-gray-400 mb-2">
               Correo Electrónico
@@ -105,7 +106,6 @@ function LoginPage() {
               required
             />
           </div>
-          {/* Campo de Contraseña (controlado) */}
           <div className="mb-6">
             <label htmlFor="password" className="block text-gray-400 mb-2">
               Contraseña
@@ -135,7 +135,6 @@ function LoginPage() {
           <hr className="flex-grow border-gray-600" />
         </div>
 
-        {/* Botón para el flujo de autenticación de demostración */}
         <button
           onClick={handleDemoLogin}
           className="w-full py-3 font-bold text-white bg-gray-600 rounded-md hover:bg-gray-700 transition duration-300 disabled:bg-gray-500"

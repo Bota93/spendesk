@@ -1,8 +1,8 @@
 /**
  * @file DashboardPage.jsx
  * @module pages/DashboardPage
- * @description Página principal para usuarios autenticados. Gestiona la obtención, visualización,
- * borrado y edición de transacciones, así como el estado de la sesión.
+ * @description Página principal para usuarios autenticados. Gestiona el estado completo del CRUD de transacciones,
+ * incluyendo la lógica para abrir el modal en modo 'creación' o 'edición'.
  */
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
@@ -13,33 +13,26 @@ import AddTransactionModal from "../components/AddTransactionModal.jsx";
 
 /**
  * @function DashboardPage
- * @description Componente que actúa como el panel principal del usuario. Es responsable de:
- * - Obtener y mostrar la lista de transacciones del usuario.
- * - Calcular y mostrar el balance total.
- * - Gestionar el estado para abrir el modal en modo 'creación' o 'edición'.
- * - Manejar la lógica de borrado de transacciones.
- * - Gestionar el cierre de sesión.
+ * @description Componente que actúa como el panel principal del usuario. Orquesta la obtención,
+ * visualización, borrado y edición de transacciones, gestionando el estado de la UI
+ * y la comunicación con el componente modal.
  * @returns {JSX.Element}
  */
 function DashboardPage() {
   const { session } = useAuth();
   const navigate = useNavigate();
 
-  // Estado para almacenar la lista de transacciones obtenidas de la base de datos.
   const [transactions, setTransactions] = useState([]);
-  // Estado para gestionar la UI durante las operaciones asíncronas.
   const [loading, setLoading] = useState(true);
-
-  // Estados para la gestión del modal de edición/creación.
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // Estado para almacenar la transacción que se está editando. Si es 'null', el modal está en modo 'creación'.
   const [editingTransaction, setEditingTransaction] = useState(null);
   const modalRef = useRef(null);
 
   /**
    * @function getTransactions
-   * @description Función asíncrona para obtener las transacciones del usuario autenticado.
-   * Se envuelve en `useCallback` para memorizar la función y optimizar el rendimiento,
-   * evitando re-creaciones en cada renderizado.
+   * @description Obtiene las transacciones del usuario autenticado desde Supabase.
+   * Se envuelve en `useCallback` para la optimización del rendimiento.
    */
   const getTransactions = useCallback(async () => {
     if (session) {
@@ -59,12 +52,12 @@ function DashboardPage() {
     }
   }, [session]);
 
-  // Efecto que se ejecuta al montar el componente para cargar los datos iniciales.
+  // Efecto para cargar los datos iniciales al montar el componente.
   useEffect(() => {
     getTransactions();
   }, [getTransactions]);
 
-  // Efecto que sincroniza el estado `isModalOpen` con el <dialog> nativo del DOM.
+  // Efecto para sincronizar el estado del modal con el DOM.
   useEffect(() => {
     const dialog = modalRef.current;
     if (dialog) {
@@ -75,7 +68,7 @@ function DashboardPage() {
   /**
    * @async
    * @function handleLogout
-   * @description Cierra la sesión activa del usuario y lo redirige a la página de inicio.
+   * @description Cierra la sesión del usuario.
    */
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -85,7 +78,7 @@ function DashboardPage() {
   /**
    * @async
    * @function handleDelete
-   * @description Gestiona el borrado de una transacción específica.
+   * @description Elimina una transacción específica de la base de datos y actualiza la UI.
    * @param {number} transactionId - El ID de la transacción a eliminar.
    */
   const handleDelete = async (transactionId) => {
@@ -99,7 +92,6 @@ function DashboardPage() {
       if (error) {
         console.error("Error al borrar la transacción:", error);
       } else {
-        // Actualización optimista de la UI para una mejor experiencia de usuario.
         setTransactions(transactions.filter((t) => t.id !== transactionId));
       }
     }
@@ -107,8 +99,9 @@ function DashboardPage() {
 
   /**
    * @function handleOpenModal
-   * @description Abre el modal, configurándolo para modo 'edición' o 'creación'.
-   * @param {object | null} [transaction=null] - La transacción a editar. Si es null, se abre en modo creación.
+   * @description Abre el modal de transacciones. Si se le pasa un objeto de transacción,
+   * establece el estado para el modo 'edición'. Si no, el modal se abrirá en modo 'creación'.
+   * @param {object | null} [transaction=null] - La transacción a editar.
    */
   const handleOpenModal = (transaction = null) => {
     setEditingTransaction(transaction);
@@ -117,14 +110,15 @@ function DashboardPage() {
 
   /**
    * @function handleCloseModal
-   * @description Cierra el modal y resetea el estado de edición.
+   * @description Cierra el modal y resetea el estado de edición para asegurar que la
+   * próxima apertura sea limpia (en modo creación por defecto).
    */
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingTransaction(null);
   };
 
-  // Cálculo del balance total derivado del estado de transacciones.
+  // El balance se calcula de forma derivada a partir del estado de las transacciones.
   const totalBalance = transactions.reduce((acc, transaction) => {
     return transaction.type === "income"
       ? acc + transaction.amount
@@ -133,6 +127,7 @@ function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
+      {/* El modal recibe el estado de edición y los callbacks para cerrar y actualizar. */}
       <AddTransactionModal
         ref={modalRef}
         onClose={handleCloseModal}
@@ -145,7 +140,11 @@ function DashboardPage() {
           <div>
             <h1 className="text-2xl font-bold text-emerald-400">Spendesk</h1>
             {session && (
-              <p className="text-sm text-gray-400">{session.user.email}</p>
+              <p className="text-sm text-gray-400">
+                {session.user.user_metadata?.is_demo
+                  ? "Usuario Demo"
+                  : session.user.email}
+              </p>
             )}
           </div>
           <button
@@ -173,6 +172,7 @@ function DashboardPage() {
           <h2 className="text-3xl font-bold text-gray-200">
             Últimos Movimientos
           </h2>
+          {/* El botón de añadir abre el modal en modo 'creación' (sin argumentos). */}
           <button
             onClick={() => handleOpenModal()}
             className="px-6 py-3 font-bold text-white bg-emerald-500 rounded-md hover:bg-emerald-600 transition duration-300"
@@ -192,7 +192,7 @@ function DashboardPage() {
                     key={transaction.id}
                     className="p-4 flex justify-between items-center group hover:bg-gray-700 transition duration-200"
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 sm:gap-4">
                       {/* --- Acciones de Fila --- */}
                       <button
                         onClick={() => handleDelete(transaction.id)}
