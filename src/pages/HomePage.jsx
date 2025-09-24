@@ -17,7 +17,7 @@ import { Link } from "react-router-dom";
  */
 function HomePage() {
   return (
-    <main className="min-h-screen text-white bg-gray-900 p-4 sm:p-8">
+    <main className="min-h-screen text-white bg-gradient-to-br from-gray-900 to-slate-800 p-4">
       <div className="container mx-auto text-center">
         {/* --- Sección Principal (Hero) --- */}
         <section className="py-16 sm:py-20">

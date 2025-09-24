@@ -1,13 +1,14 @@
 /**
  * @file AddTransactionModal.jsx
  * @module components/AddTransactionModal
- * @description Componente modal reutilizable para la creación y edición de transacciones.
- * Su comportamiento se adapta en función de las props recibidas.
+ * @description Componente modal reutilizable para la creación y edición de transacciones,
+ * utilizando notificaciones 'toast' para un feedback de usuario mejorado.
  */
 
 import React, { forwardRef, useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
+import toast from "react-hot-toast";
 
 // Define una lista estática de categorías para el formulario.
 const categories = [
@@ -48,8 +49,7 @@ const AddTransactionModal = forwardRef(function AddTransactionModal(
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  // Efecto secundario que se ejecuta cuando el modal se abre o cuando cambia la prop `transactionToEdit`.
-  // Es responsable de poblar el formulario para la edición o de resetearlo para la creación.
+  // Efecto secundario para poblar el formulario para la edición o resetearlo para la creación.
   useEffect(() => {
     if (transactionToEdit) {
       // Modo Edición: se establecen los estados con los valores de la transacción existente.
@@ -110,14 +110,14 @@ const AddTransactionModal = forwardRef(function AddTransactionModal(
 
       if (error) throw error;
 
-      alert(
+      toast.success(
         `Movimiento ${transactionToEdit ? "actualizado" : "añadido"} con éxito!`
       );
       onTransactionUpdated(); // Notifica al Dashboard para que actualice la lista.
       onClose(); // Cierra el modal.
     } catch (error) {
       console.error("Error al guardar la transacción:", error);
-      alert("No se pudo guardar el movimiento.");
+      toast.error("No se pudo guardar el movimiento.");
     } finally {
       setLoading(false);
     }
@@ -223,8 +223,6 @@ const AddTransactionModal = forwardRef(function AddTransactionModal(
             </label>
           </div>
         </div>
-
-        {/* --- Botones de Acción --- */}
         <div className="flex justify-end gap-4">
           <button
             type="button"
